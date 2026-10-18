@@ -141,3 +141,21 @@ hr { border-color:var(--line) !important; }
   color:#2457c5 !important; font-size:15px; font-weight:600;
   line-height:1.6; margin:4px 0 12px;
 }
+/* Keep form fields readable even when a host/browser selects a dark theme. */
+[data-testid="stForm"], [data-testid="stPopoverBody"] { color:#19263d; background:#fff; }
+[data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p,
+[data-testid="stTextInput"] label, [data-testid="stTextInput"] label p {
+  color:#19263d !important; opacity:1 !important;
+}
+[data-testid="stTextInput"] [data-baseweb="input"],
+[data-testid="stTextInput"] [data-baseweb="base-input"],
+[data-testid="stTextInput"] input {
+  background-color:#fff !important; color:#19263d !important;
+  -webkit-text-fill-color:#19263d !important; caret-color:#2457e6 !important;
+  color-scheme:light;
+}
+[data-testid="stTextInput"] [data-baseweb="input"] { border-color:#8393b0; }
+[data-testid="stTextInput"] button { background:#fff !important; color:#526078 !important; }
+[data-testid="stTextInput"] input::placeholder {
+  color:#59677d !important; -webkit-text-fill-color:#59677d !important; opacity:1;
+}
