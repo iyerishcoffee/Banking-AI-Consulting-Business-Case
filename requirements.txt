@@ -1,0 +1,5 @@
+streamlit==1.66.0
+pypdf==6.21.1
+pymupdf==1.28.2
+requests==2.34.2
+jsonschema==4.26.0

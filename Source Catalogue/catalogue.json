@@ -1,0 +1,124 @@
+{
+  "name": "Harbour Bank fictional source catalogue",
+  "version": "1.0",
+  "date": "2026-10-18",
+  "original_archive": "archive/Original bank forms",
+  "forms": [
+    {
+      "id": "F01",
+      "file": "Harbour Bank Business Account Maintenance.pdf",
+      "format": "dynamic",
+      "source_sha256": "c5adcde053ac8fdd785c560701443b8163cf712460ecc5e7e1575b859dcddc6a",
+      "sha256": "44bed07019b99296884537711f179a74e7b77ed6bfc12caeb6c5909dd65a597d",
+      "changes": {
+        "config": 2,
+        "template": 156,
+        "localeSet": 0,
+        "connectionSet": 1,
+        "datasets": 2,
+        "schema": 0,
+        "PDFSecurity": 0,
+        "xmpmeta": 1,
+        "xfdf": 0,
+        "stylesheet": 0
+      }
+    },
+    {
+      "id": "F02",
+      "file": "Harbour Bank Board Resolution Companies.pdf",
+      "format": "static",
+      "source_sha256": "2bbcda523d6d1d4b2c01d0b00c06ca985f58782469e9806c878068fa406db952",
+      "sha256": "fca5050f0297a1bf580bed6a8831e53fd2b4fceef6005b941900d2437572d807",
+      "changes": [
+        {
+          "page": 1,
+          "redaction_regions": 8
+        },
+        {
+          "page": 2,
+          "redaction_regions": 1
+        },
+        {
+          "page": 3,
+          "redaction_regions": 5
+        },
+        {
+          "page": 4,
+          "redaction_regions": 2
+        }
+      ]
+    },
+    {
+      "id": "F03",
+      "file": "Harbour Bank Minutes of Meeting Associations.pdf",
+      "format": "static",
+      "source_sha256": "3e47a31909c600460b4d4e7a127c0b35d568ac8454c71287b1e1e62d15908159",
+      "sha256": "98f8725f780790003869a05715587f54239cd3f617ddc955086f0b02acd4bf30",
+      "changes": [
+        {
+          "page": 1,
+          "redaction_regions": 4
+        },
+        {
+          "page": 2,
+          "redaction_regions": 1
+        },
+        {
+          "page": 3,
+          "redaction_regions": 1
+        },
+        {
+          "page": 4,
+          "redaction_regions": 1
+        }
+      ]
+    },
+    {
+      "id": "F05A",
+      "file": "Harbour Bank Business Debit Card Application.pdf",
+      "format": "static",
+      "source_sha256": "b4f0fd4d290d513195b32c12c6bc4744ded4d842568732e2133d74b2ed8f6c7a",
+      "sha256": "620cad3d0138d24e8fb1c5f96f9254c4c92533967d7d7b012ec4235a55f6f34d",
+      "changes": [
+        {
+          "page": 1,
+          "redaction_regions": 4
+        },
+        {
+          "page": 2,
+          "redaction_regions": 64
+        },
+        {
+          "page": 3,
+          "redaction_regions": 17
+        }
+      ]
+    },
+    {
+      "id": "F05M",
+      "file": "Harbour Bank Business Debit Card Maintenance.pdf",
+      "format": "static",
+      "source_sha256": "544522debc63f3df936984006a977c58f689e748587916f6e33d7eb95f56046c",
+      "sha256": "4f6cad04ad2866ea4bd7975b513cc83edf1025c506a8bce21afb1278241ab099",
+      "changes": [
+        {
+          "page": 1,
+          "redaction_regions": 9
+        },
+        {
+          "page": 2,
+          "redaction_regions": 8
+        }
+      ]
+    }
+  ],
+  "services": [
+    {
+      "id": "F04",
+      "name": "Business Phone Banking",
+      "form": "F01",
+      "section": "Update E Service",
+      "separate_pdf": false
+    }
+  ]
+}
