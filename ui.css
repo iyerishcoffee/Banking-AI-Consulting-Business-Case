@@ -159,3 +159,28 @@ hr { border-color:var(--line) !important; }
 [data-testid="stTextInput"] input::placeholder {
   color:#59677d !important; -webkit-text-fill-color:#59677d !important; opacity:1;
 }
+/* Explicit light surfaces for interactive states under any browser theme. */
+[data-testid="stExpander"] details,
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary:hover,
+[data-testid="stExpander"] summary:focus,
+[data-testid="stExpander"] summary:focus-visible,
+[data-testid="stExpander"] summary:active {
+  background:#edf2ff !important; color:#19263d !important;
+}
+[data-testid="stExpander"] summary :is(p,span,svg) { color:#19263d !important; }
+[data-testid="stExpanderDetails"] { background:#fff !important; color:#19263d !important; }
+[data-testid="stPopover"] button:hover,
+[data-testid="stPopover"] button:focus {
+  background:#edf2ff !important; color:#19263d !important;
+}
+[data-testid="stButton"] button:not([kind="primary"]):hover,
+[data-testid="stDownloadButton"] button:hover,
+[data-testid="stFormSubmitButton"] button:not([kind="primaryFormSubmit"]):hover {
+  background:#edf2ff !important; color:#19263d !important;
+}
+[data-testid="stFileUploaderDropzone"] { background:#edf2ff !important; color:#19263d !important; }
+[data-testid="stFileUploaderDropzone"] :is(p,small,span) { color:#19263d !important; }
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+  background:#fff !important; color:#19263d !important;
+}
