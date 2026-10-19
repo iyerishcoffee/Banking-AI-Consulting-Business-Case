@@ -5,6 +5,7 @@ from itertools import groupby
 import io
 import json
 from pathlib import Path
+import re
 import zipfile
 
 import streamlit as st
@@ -34,6 +35,23 @@ ROLEPLAY_SCENARIOS = [
 
 def instruction(text):
     st.markdown('<p class="hb-instruction">' + escape(text) + '</p>', unsafe_allow_html=True)
+
+
+def applicant_text(text):
+    """Hide internal catalogue/rule codes from applicant-facing explanations."""
+    labels = {
+        'F01': 'Business Account Maintenance form',
+        'F02': 'Board Resolution form for companies',
+        'F03': 'Minutes of Meeting form for associations',
+        'F05A': 'Business Debit Card Application form',
+        'F05M': 'Business Debit Card Maintenance form',
+    }
+    text = str(text or '')
+    for code, label in labels.items():
+        text = re.sub(r'\b' + code + r'\b', label, text)
+    text = re.sub(r'\bR\d{2}(?:\s*/\s*R\d{2})*\b', '', text)
+    text = re.sub(r'\s{2,}', ' ', text)
+    return text.strip(' .;')
 
 st.set_page_config(page_title='Harbour Bank | Business banking', page_icon='⚓', layout='centered')
 st.markdown('<style>' + (ROOT / 'ui.css').read_text(encoding='utf-8') + '</style>', unsafe_allow_html=True)
@@ -169,10 +187,11 @@ def render_downloads(ids, prefix):
 
 
 def render_correction(item, files, widget_key):
-    # One instruction, one compact location line. Detailed rules stay with staff.
-    st.write('**' + item['title'] + '.**')
-    if item.get('details'):
-        st.write(item['details'])
+    # Keep the correction readable while retaining a short plain-language explanation.
+    title = applicant_text(item.get('title')) or 'Please check this item'
+    details = applicant_text(item.get('details')) or 'Please check this entry against your request. Ask a Customer Service Officer if you are unsure.'
+    st.write('**' + title.rstrip('.') + '.**')
+    st.write(details + ('' if details.endswith(('.', '!', '?')) else '.'))
     locations = item.get('locations', [])
     if locations:
         st.caption(compact_locations(locations))
@@ -271,7 +290,7 @@ def render_uploads(key):
                     st.caption('Your forms have been checked. The page snapshots point to each item.')
                     with st.chat_message('assistant'):
                         st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
-                        st.write(ai.get('summary') or 'I’ve checked the forms. Please review the corrections and snapshots below, then ask me if anything is unclear.')
+                        st.write(applicant_text(ai.get('summary')) or 'I’ve checked the forms. Please review the notes and page snapshots below, then ask me if anything is unclear.')
                 elif ai.get('status') == 'unavailable':
                     st.info('The AI check could not finish. The quick checks are shown below. ' + ai['message'])
                     with st.chat_message('assistant'):

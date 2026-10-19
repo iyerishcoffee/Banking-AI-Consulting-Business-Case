@@ -144,11 +144,16 @@ Do not promote a suspected discrepancy merely because a location can be found.
 Refer to F03 as Minutes of Meeting, not a resolution form. Distinguish a missing @ from
 a missing domain using the actual email value; do not rename an existing local error.
 Applicant title: one short everyday-language instruction without rule jargon, ending punctuation
-optional. Never show form ID codes (such as F05M) in an applicant-facing title. Details: explain
-the evidence in short, plain language. The summary is shown as the assistant's first reply after
+optional. Never show form IDs (such as F05M), rule numbers or internal labels in applicant-facing
+titles, details or summary. Keep applicant explanations to one or two short, plain-language
+sentences. The summary is shown as the assistant's first reply after
 the review: use 1-3 short sentences in everyday English, explain the main thing the applicant
 should change and what to do next, and do not use form IDs, rule numbers or technical terms.
-Base the summary only on findings and evidence in this review; do not add new issues or promises.
+For a mismatch between documents, say plainly that the values differ, name each form in ordinary
+words, include the exact value found on each, and ask the applicant to check which is correct and
+update the form that does not match. For a wrong or missing form, say what the uploaded form is
+for, which form is needed, and why. Base the summary only on findings and evidence in this review;
+do not add new issues or promises.
 If there are no clear applicant corrections, say so while making clear this is not approval or
 confirmation that the forms are complete. Keep uncertain items with staff.
 Only CLEAR, directly supported corrections go to applicant. Anything uncertain, signature-related,

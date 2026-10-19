@@ -1,0 +1,93 @@
+{
+  "source": "apps/sharing",
+  "files": [
+    {
+      "file": "app.py",
+      "sha256": "25500b04be519a19d8e68c3a225917d68eb7f964c82a6b0d7a0c08c1207f25eb"
+    },
+    {
+      "file": "ui.css",
+      "sha256": "f8dc4b4fa59a716296fa943c96811ae9c6207bac4b1f808229b83c164e0ec2ad"
+    },
+    {
+      "file": "form_selection.py",
+      "sha256": "c30ca33071c97bb59b4969dc78ba48276a32cd20347d2ec69f2f685f621d2f91"
+    },
+    {
+      "file": "document_review.py",
+      "sha256": "797943c79cb2b0dfa721cdc3dc19e12d3b5432b538ff0ef0bd99b2c02ebc7352"
+    },
+    {
+      "file": "review_snapshots.py",
+      "sha256": "04657c5dc71d84d3ff14d926beff2a55dfd58aa3a198815a80ad34b01141a635"
+    },
+    {
+      "file": "gemini_chat.py",
+      "sha256": "7a2fe3abe3e6a998ad51fb56d7aeaa5f284b61d18ff147fac54a93a34648aee4"
+    },
+    {
+      "file": "gemini_review.py",
+      "sha256": "224c331b217e5b2017b15d18d5d85346637bf051f8617f89336bda71b980daaf"
+    },
+    {
+      "file": "review_findings.py",
+      "sha256": "cbd4ac83628fe5e4200b52a5cca459db1c2090f6b1098b6c990caad5c355640b"
+    },
+    {
+      "file": "review_help.py",
+      "sha256": "64414d4f29b01b9d044235b8b9ad2b41cf418c3bb6429fd3c4b8219afb4735ef"
+    },
+    {
+      "file": "review_questions.py",
+      "sha256": "8f226fef51640b9b91a4c256aadbb446cafd1674bb0575b67ac1097f0cc34254"
+    },
+    {
+      "file": "server_settings.py",
+      "sha256": "21a965f4f696b5863189915306a5b505a9db9f0f67292a6de841b1da49a1ba1b"
+    },
+    {
+      "file": "requirements.txt",
+      "sha256": "a0a141c1188b84230427e0fb720c7e59a62a5adae3b44b9ba472d0907fa6398f"
+    },
+    {
+      "file": "Account Change Submission Review Policy.docx",
+      "sha256": "f0ed6cd425a4f06270408392e7f4f74ba733f375eb4c24d2280e764306f1ecc3"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d91430349403c5e1beef57c02673b4b36a573a17221dfb0c9308adb5beaf9d31"
+    },
+    {
+      "file": ".gitignore",
+      "sha256": "1f62efc62c00f1e72c75c07bd85ce5f9845b35281530bcbff0ccec0910110692"
+    },
+    {
+      "file": ".streamlit/config.toml",
+      "sha256": "f68a8ea20a529240341ee6049b6a3152fa6275c7da2a706e87b215f824c2a4ee"
+    },
+    {
+      "file": "Source Catalogue/catalogue.json",
+      "sha256": "1d2c9a8d627d80643fa66394865ae89bd021af7b753bf3daac069328abbd30fa"
+    },
+    {
+      "file": "Source Catalogue/Harbour Bank Business Account Maintenance.pdf",
+      "sha256": "44bed07019b99296884537711f179a74e7b77ed6bfc12caeb6c5909dd65a597d"
+    },
+    {
+      "file": "Source Catalogue/Harbour Bank Board Resolution Companies.pdf",
+      "sha256": "fca5050f0297a1bf580bed6a8831e53fd2b4fceef6005b941900d2437572d807"
+    },
+    {
+      "file": "Source Catalogue/Harbour Bank Minutes of Meeting Associations.pdf",
+      "sha256": "98f8725f780790003869a05715587f54239cd3f617ddc955086f0b02acd4bf30"
+    },
+    {
+      "file": "Source Catalogue/Harbour Bank Business Debit Card Application.pdf",
+      "sha256": "620cad3d0138d24e8fb1c5f96f9254c4c92533967d7d7b012ec4235a55f6f34d"
+    },
+    {
+      "file": "Source Catalogue/Harbour Bank Business Debit Card Maintenance.pdf",
+      "sha256": "4f6cad04ad2866ea4bd7975b513cc83edf1025c506a8bce21afb1278241ab099"
+    }
+  ]
+}

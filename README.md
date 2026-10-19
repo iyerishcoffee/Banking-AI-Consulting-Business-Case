@@ -4,7 +4,9 @@ This is a separate copy of the local prototype. The original project and its run
 
 ## What changed
 
-Correction snapshots now appear automatically beneath visible findings; there is no Show me toggle. Additional corrections remain expandable to keep the initial review short. Precise snapshots still require a verified field/text location. The request screen includes three fictional role-play scenarios: treasurer handover, a new director needing signatory access and a card, and a departing employee with card and Phone Banking access. These are guidance for testers, not automatically submitted requests or expected answers.
+Correction snapshots now appear automatically beneath visible findings; there is no Show me toggle. Additional corrections remain expandable to keep the initial review short. Precise snapshots still require a verified field/text location. The request screen includes three fictional role-play scenarios: treasurer handover, a new director needing signatory access and a card, and a departing employee with card and Phone Banking access. Testers can select a scenario to keep its full role-play guide visible above the conversation throughout follow-up questions. These are guidance for testers, not automatically submitted requests or expected answers.
+
+After an AI-enabled form check, Harbour assistant gives a short plain-language overview automatically, then explains each correction beside its page snapshot. The overview and correction wording are generated from the review findings; they can be mistaken and do not replace staff review.
 
 - Visitors do not enter or see the Gemini API key. It is read privately by the server.
 - A tester access code is required before the application is displayed.
@@ -28,7 +30,7 @@ Restart this edition after changing secrets. Share only the tester code, never t
 
 ## Run locally
 
-Double-click `Start sharing test.cmd`. It uses the original project's Python environment and opens this edition at http://localhost:8502. The original remains at http://localhost:8501. The launcher binds to your computer only; it does not publish a site or expose your network.
+Double-click `Open Tester Preview.cmd`. It uses the original project's Python environment and opens this edition at http://localhost:8502. The original remains at http://localhost:8501. The launcher binds to your computer only; it does not publish a site or expose your network.
 
 For a standalone environment, install `requirements.txt` and run:
 
@@ -38,7 +40,7 @@ python -m streamlit run app.py --server.port=8502 --server.address=127.0.0.1
 
 ## Before sharing a public link
 
-This edition has NOT been deployed. A hosting service is still needed; localhost links do not work on other people's computers. Publish only this folder as the app root, keeping `.streamlit/secrets.toml` excluded, and configure secrets privately on the host. Use `app.py` as the entry point. Confirm catalogue downloads and PDF review work in the hosting environment before inviting testers.
+This edition has been deployed to Streamlit Community Cloud for friend testing. Local edits do not update the hosted app automatically. Use the project-root tool tools/prepare_upload.py to build deployment/github-upload, upload that clean bundle to GitHub and configure secrets privately on the host. Use app.py as the entry point. Localhost links work only on the computer running the app. Confirm catalogue downloads and PDF review after each hosted update.
 
 Everyone uses the owner's Gemini quota. The app does not enable billing or know the provider's billing tier. These hourly limits are an additional demo throttle, not a spending guarantee: they reset on restart and are not shared across multiple server processes or replicas. Keep the project on the intended provider plan and monitor usage. Public deployment needs separate review of hosting access controls and abuse protection.
 
@@ -46,10 +48,10 @@ Everyone uses the owner's Gemini quota. The app does not enable billing or know 
 
 1. Confirm the access-code gate appears and rejects an incorrect code.
 2. Enter the tester code. Confirm there is no API-key box or AI-chat switch. Show staff view should reveal a fourth tab for the current session; Hide staff view should remove it.
-3. Describe an association signatory change. Confirm maintenance and minutes are recommended.
+3. Select a role-play scenario. Confirm its instructions remain visible after sending a message, then describe the request in your own words. For an association signatory change, confirm maintenance and minutes are recommended.
 4. Upload fictional completed forms and enable AI review explicitly. Confirm corrections and snapshots appear.
 5. Open a second browser session and confirm it starts without the first visitor's request or uploads.
 
 Use fictional information only. Uploaded forms and conversation stay in Streamlit session memory on the host; AI-enabled actions send the described content to Google. Nothing is submitted to a bank. Review can miss errors or produce mistaken findings; Customer Service Officers retain verification and approval responsibility.
 
-The Word handbook remains the policy master for this copy. Production staff features would require proper separate authentication. The tester staff-view button is only for previewing the current fictional session.
+The editable Word master is now in project-root/reference/policy. This app keeps a runtime copy. After changing the master, use tools/sync_reference.py, run checks and prepare a fresh upload bundle. Production staff features would require proper separate authentication. The tester staff-view button is only for previewing the current fictional session.

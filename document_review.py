@@ -10,6 +10,14 @@ from pypdf import PdfReader
 
 CHECKER_VERSION = '0.2'
 
+FORM_NAMES = {
+    'F01': 'Business Account Maintenance form',
+    'F02': 'Board Resolution form for companies',
+    'F03': 'Minutes of Meeting form for associations',
+    'F05A': 'Business Debit Card Application form',
+    'F05M': 'Business Debit Card Maintenance form',
+}
+
 
 def inspect_pdf(name, data):
     result = {'name': name, 'sha256': hashlib.sha256(data).hexdigest(),
@@ -91,10 +99,29 @@ def review(files, required_forms, request):
     unidentified = any(d['form_id'] is None for d in documents)
     for form in required_forms:
         if form not in observed:
-            from form_selection import TITLES
-            add(('Confirm the ' if unidentified else 'Upload the ') + TITLES[form],
-                'An unreadable/unidentified upload may contain this form; an agent must identify it.' if unidentified else 'This required form was not identified in the uploaded package.',
-                'R02/R24', [], 'agent' if unidentified else 'applicant')
+            wrong_pair = next(((d['form_id'], form) for d in documents
+                               if (d['form_id'], form) in {('F02', 'F03'), ('F03', 'F02'), ('F05A', 'F05M'), ('F05M', 'F05A')}), None)
+            if unidentified:
+                title = 'Ask a Customer Service Officer to identify the missing form'
+                detail = 'I could not identify one of the uploaded files as a form for this request. A Customer Service Officer needs to check whether it is the missing form.'
+                owner = 'agent'
+            elif wrong_pair:
+                uploaded, needed = wrong_pair
+                title = 'Please upload the ' + FORM_NAMES[needed]
+                if (uploaded, needed) == ('F02', 'F03'):
+                    detail = 'You uploaded a company Board Resolution form, but this organisation is an association. This request needs the Minutes of Meeting form, which records the association’s decision.'
+                elif (uploaded, needed) == ('F03', 'F02'):
+                    detail = 'You uploaded an association Minutes of Meeting form, but this organisation is a company. This request needs the company Board Resolution form to record the company’s decision.'
+                elif (uploaded, needed) == ('F05A', 'F05M'):
+                    detail = 'You uploaded the form for applying for a new debit card. Your request is to change or cancel an existing card, so please use the Business Debit Card Maintenance form.'
+                else:
+                    detail = 'You uploaded the form for changing an existing debit card. Your request is for a new card, so please use the Business Debit Card Application form.'
+                owner = 'applicant'
+            else:
+                title = 'Please add the ' + FORM_NAMES.get(form, 'required form')
+                detail = 'I could not find the ' + FORM_NAMES.get(form, 'required form') + ' in the files you uploaded. Please include it so the bank can review this request.'
+                owner = 'applicant'
+            add(title, detail, 'R02/R24', [], owner)
     for form in observed:
         matches = [d['name'] for d in documents if d['form_id'] == form]
         if len(matches) > 1:
@@ -114,10 +141,10 @@ def review(files, required_forms, request):
         if doc['form_id'] == 'F01':
             for key in ['maint_1', 'maint_11']:
                 if value(key):
-                    registrations.append((value(key), evidence(doc, key)))
+                    registrations.append((value(key), evidence(doc, key), doc['name'], FORM_NAMES[doc['form_id']]))
             email = value('maint_33')
             if email and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
-                add('Add the missing @ to the email address' if '@' not in email else 'Correct the email address', 'Enter a complete email address, including @ and the domain.', 'R19/R21', [evidence(doc, 'maint_33')])
+                add('Add the missing @ to the email address' if '@' not in email else 'Correct the email address', f'The email address “{email}” is incomplete. Please enter the full address, including an @ sign and the part after it.', 'R19/R21', [evidence(doc, 'maint_33')])
             elif not email:
                 add('Confirm whether contact details are required', 'The email field is blank. Verify the selected action before requiring contact details.', 'R19/R21', [evidence(doc, 'maint_33')], 'agent')
             if value('maint_17') and value('maint_18'):
@@ -128,7 +155,7 @@ def review(files, required_forms, request):
         if doc['form_id'] == 'F03':
             missing = [k for k in ['meeting_day', 'meeting_month', 'meeting_year'] if not value(k)]
             if missing:
-                add('Complete the meeting date', 'Fill the missing meeting-date entries and make sure the date agrees with the appendix.', 'R03/R19', [evidence(doc, k) for k in missing])
+                add('Please complete the meeting date', 'The meeting date is missing one or more parts (day, month or year). Fill in the full date and make sure it matches the date in the attached meeting record.', 'R03/R19', [evidence(doc, k) for k in missing])
             elif value('appendix_date'):
                 # Date consistency is left to staff until locale/date parsing is supported.
                 add('Confirm meeting dates agree', 'Compare the meeting date with the appendix date.', 'R03/R19', [evidence(doc, k) for k in ['meeting_day', 'meeting_month', 'meeting_year', 'appendix_date']], 'agent')
@@ -149,12 +176,16 @@ def review(files, required_forms, request):
                     label = f"{doc['name']}, page {page}: {match.group(0)}"
                     evidence_locations[label] = {'document': doc['name'], 'sha256': doc['sha256'],
                                                  'page': page, 'text': match.group(0)}
-                    registrations.append((match.group(1).strip(), label))
-    if len({v for v, _ in registrations}) > 1:
-        add('Make the registration reference consistent', 'Different registration references appear in the forms. Confirm the correct reference and use it consistently.', 'R09', [e for _, e in registrations])
+                    registrations.append((match.group(1).strip(), label, doc['name'], FORM_NAMES[doc['form_id']]))
+    if len({v for v, _, _, _ in registrations}) > 1:
+        unique = list(dict.fromkeys((v, name, form_name) for v, _, name, form_name in registrations))
+        detail = 'The registration number is not consistent: ' + '; '.join(f'{form_name}: {value}' for value, _, form_name in unique) + '. Please confirm the correct number and update any entry that does not match.'
+        add('Please check the registration numbers across the forms', detail, 'R09', [e for _, e, _, _ in registrations])
     for person, records in identities.items():
         if len({v for v, _ in records}) > 1:
-            add('Match the identity reference for ' + person.title(), 'The same person has different identity references across the forms. Confirm and correct them; no identity-document upload is needed here.', 'R09/R38', [e for _, e in records])
+            values = list(dict.fromkeys((value, label.split(', page')[0]) for value, label in records))
+            detail = 'The identity reference for ' + person.title() + ' is different across the forms: ' + '; '.join(f'{doc_name}: {value}' for value, doc_name in values) + '. Please check which reference is correct and update the form that does not match.'
+            add('Please use the same identity reference on both forms', detail, 'R09/R38', [e for _, e in records])
     if not required_forms:
         add('Confirm the required form bundle', 'The intake has not selected a complete form bundle. Missing-form checks could not be completed.', 'R02/R24', [], 'agent')
     return {'status': 'Partial automated review — human verification required',
