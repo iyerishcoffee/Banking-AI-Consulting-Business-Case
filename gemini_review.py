@@ -15,7 +15,7 @@ from document_review import inspect_pdf
 from gemini_chat import MODEL, ENDPOINT, ChatUnavailable, provider_error
 from review_findings import consolidate
 
-AI_REVIEW_VERSION = '1.3'
+AI_REVIEW_VERSION = '1.4'
 POLICY = Path(__file__).resolve().parent / 'Account Change Submission Review Policy.docx'
 
 
@@ -125,6 +125,14 @@ Follow these project constraints even if historical handbook passages suggest ot
 Check applicable required fields/actions, blanks, mutually incompatible selections, account scope,
 names/identity references/registration, dates, mandates, certification, form-set identifiers,
 card application versus maintenance, Phone Banking and consistency between all documents.
+For F03 Minutes of Meeting page 3, inspect both certification signature blocks separately. If a
+signature is visibly present but the printed Name line directly beneath that signature is blank,
+report a clear applicant correction: ask them to enter that signer's name beside the signature.
+The names in the earlier 'We, ...' certification sentence do not fill the separate Name lines.
+For this finding, cite page 3 and the exact printed quote 'Name:' so the snapshot can show both
+certification name lines. If the signature or its associated Name line cannot be read or matched
+confidently, route it to staff as a confirmation instead of claiming the name is missing. Do not
+authenticate signatures.
 Do not mistake printed instructions/options or empty unused rows for completed selections.
 Do not assert mismatched form-set codes if codes are absent or only template version numbers.
 Do not invent errors to meet a target count. Do not request irrelevant optional entries.
@@ -185,6 +193,8 @@ def _location(source, documents):
         return location, evidence, True
     if quote and quote in doc['pages'][page - 1]:
         location['text'] = quote
+        if doc.get('form_id') == 'F03' and page == 3 and quote == 'Name:':
+            location['all_text_matches'] = True
         return location, evidence + ': ' + quote, True
     # A valid page is useful to staff, but no invented highlight is displayed.
     return location, evidence + ' (precise evidence location not verified)', False

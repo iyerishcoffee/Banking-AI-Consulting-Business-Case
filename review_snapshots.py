@@ -35,18 +35,24 @@ def snapshot(data, location):
                 matches = [widget.rect for widget in page.widgets() or [] if widget.field_name == location['field']]
             elif location.get('text'):
                 matches = page.search_for(location['text'])
+                if location.get('all_text_matches'):
+                    matches = [rect for rect in matches if not rect.is_empty]
             else:
                 return None
-            if len(matches) != 1:
+            if not matches or (len(matches) != 1 and not location.get('all_text_matches')):
                 return None
-            target = pymupdf.Rect(matches[0]) & page.rect
+            targets = [pymupdf.Rect(match) & page.rect for match in matches]
+            target = pymupdf.Rect(targets[0])
+            for rect in targets[1:]:
+                target |= rect
             if target.is_empty or target.is_infinite:
                 return None
             # Include nearby labels and enough space for an arrow.
             clip = pymupdf.Rect(max(0, target.x0 - 150), max(0, target.y0 - 45),
                                 min(page.rect.width, target.x1 + 80), min(page.rect.height, target.y1 + 40))
             red = (0.82, 0.12, 0.12)
-            page.draw_rect(target + (-2, -2, 2, 2), color=red, width=1.5, overlay=True)
+            for rect in targets:
+                page.draw_rect(rect + (-2, -2, 2, 2), color=red, width=1.5, overlay=True)
             # Choose a clear margin within the crop for the arrow tail.
             if clip.x1 - target.x1 >= 35:
                 tip = pymupdf.Point(target.x1 + 4, (target.y0 + target.y1) / 2)

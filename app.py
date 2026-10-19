@@ -356,6 +356,18 @@ with chat:
     selection = st.session_state.selection
     if st.session_state.get('ai_notice'):
         st.info(st.session_state.ai_notice)
+    st.write('**Scenario guides**')
+    instruction('Use a guide to invent a request, or make up your own. Then describe it in the chat below in your own words. The guides stay here while you chat.')
+    with st.expander('1 · New treasurer — keep the previous treasurer during handover', expanded=True):
+        st.write('You are Alex Morgan, newly appointed to the board of Nordic Business Council, a registered association, as its treasurer. You need access to all of the council’s bank accounts so you can carry out your new responsibilities. Erik Larsen, the previous treasurer, has stepped down from the board and no longer holds an official role. You would like him to keep his existing account access for a month while he trains you. You are unsure whether the bank will allow this.')
+        instruction('Explain the handover you want, ask what you need to do, and let the assistant ask any follow-up questions.')
+    with st.expander('2 · New company director — account access and a debit card'):
+        st.write('You are Priya Shah, a newly appointed director of Cedar Lane Trading, a private limited company. You will help manage business expenses. You need to be added as someone who can sign on the company’s bank account, and you also want a new business debit card in your name. The existing directors should keep their account access. You do not know whether the two requests need separate paperwork.')
+        instruction('Describe both things you want in everyday language. If you do not know an account detail or signing rule, say so.')
+    with st.expander('3 · Departing employee — debit card and Phone Banking'):
+        st.write('You are Daniel Lee, a director of Willow Office Supplies, a private limited company. An employee, Maya Chen, is leaving next week. She has a business debit card and uses Phone Banking, but she is not an account signatory. You want her card cancelled and her Phone Banking access removed while keeping everyone else’s access unchanged. You are unsure which details the bank will need.')
+        instruction('Explain which services Maya uses and what should stop. Let the assistant work out the forms.')
+    st.caption('Use one of these scenarios or invent your own fictional situation. There is no script to follow.')
     if stage == 'help':
         instruction('A Customer Service Officer can help with this request. You can describe any other business banking change here in the chat.')
     elif stage == 'ready':

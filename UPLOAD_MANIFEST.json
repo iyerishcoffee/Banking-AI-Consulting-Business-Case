@@ -3,7 +3,7 @@
   "files": [
     {
       "file": "app.py",
-      "sha256": "aba167289edb8f4636e51141a83191efe2ced8d1535d0d4f850e54ab0bfb6ddd"
+      "sha256": "932fdd34964737f673f5ca9b986a0583f0dc75b6a42df9657602a8dcab42e6bb"
     },
     {
       "file": "ui.css",
@@ -19,7 +19,7 @@
     },
     {
       "file": "review_snapshots.py",
-      "sha256": "04657c5dc71d84d3ff14d926beff2a55dfd58aa3a198815a80ad34b01141a635"
+      "sha256": "df1b7221a866b4eb0c053c7400e3ec290ff1752bd486dbd5c2f37b770e032f08"
     },
     {
       "file": "gemini_chat.py",
@@ -27,7 +27,7 @@
     },
     {
       "file": "gemini_review.py",
-      "sha256": "224c331b217e5b2017b15d18d5d85346637bf051f8617f89336bda71b980daaf"
+      "sha256": "3e97095da4314e4e56debe0dc430902c78b132d608febf130df3ae6897991338"
     },
     {
       "file": "review_findings.py",
@@ -51,11 +51,11 @@
     },
     {
       "file": "Account Change Submission Review Policy.docx",
-      "sha256": "f0ed6cd425a4f06270408392e7f4f74ba733f375eb4c24d2280e764306f1ecc3"
+      "sha256": "9c62fe6531b1445d4afb5e5680fdbd3f6d45f83d67867c480d4cb68306aa97ba"
     },
     {
       "file": "README.md",
-      "sha256": "cfc6e3ae8fa01f646f17f6fe61cfcc69cd4b1c0f2cc004be28e9d1ed8fb4c4ee"
+      "sha256": "6cf3a6b2794a26ca6e2446bfeaac9c0c4b048c08ce7ae4aedc888c28d0938b38"
     },
     {
       "file": ".gitignore",
