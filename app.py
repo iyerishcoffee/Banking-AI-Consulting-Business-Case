@@ -19,6 +19,17 @@ from server_settings import api_key, require_tester_access, reserve_call
 
 ROOT = Path(__file__).resolve().parent
 CATALOGUE = ROOT / 'Source Catalogue'
+ROLEPLAY_SCENARIOS = [
+    ('treasurer', '1 · New treasurer — keep the previous treasurer during handover',
+     'You are Alex Morgan, newly appointed to the board of Nordic Business Council, a registered association, as its treasurer. You need access to all of the council’s bank accounts so you can carry out your new responsibilities. Erik Larsen, the previous treasurer, has stepped down from the board and no longer holds an official role. You would like him to keep his existing account access for a month while he trains you. You are unsure whether the bank will allow this.',
+     'Explain the handover you want, ask what you need to do, and let the assistant ask any follow-up questions.'),
+    ('director', '2 · New company director — account access and a debit card',
+     'You are Priya Shah, a newly appointed director of Cedar Lane Trading, a private limited company. You will help manage business expenses. You need to be added as someone who can sign on the company’s bank account, and you also want a new business debit card in your name. The existing directors should keep their account access. You do not know whether the two requests need separate paperwork.',
+     'Describe both things you want in everyday language. If you do not know an account detail or signing rule, say so.'),
+    ('employee', '3 · Departing employee — debit card and Phone Banking',
+     'You are Daniel Lee, a director of Willow Office Supplies, a private limited company. An employee, Maya Chen, is leaving next week. She has a business debit card and uses Phone Banking, but she is not an account signatory. You want her card cancelled and her Phone Banking access removed while keeping everyone else’s access unchanged. You are unsure which details the bank will need.',
+     'Explain which services Maya uses and what should stop. Let the assistant work out the forms.'),
+]
 
 
 def instruction(text):
@@ -281,9 +292,32 @@ def render_uploads(key):
 views = st.tabs(['01  Your request', '02  Your forms', '03  Check forms'] + (['Staff review'] if staff_preview else []))
 chat, downloads, uploads = views[:3]
 with chat:
+    # Keep the selected role-play brief visible throughout the conversation so
+    # testers can refer back to their instructions while answering follow-ups.
+    active_scenario = st.session_state.get('roleplay_scenario')
+    if active_scenario:
+        scenario = next(item for item in ROLEPLAY_SCENARIOS if item[0] == active_scenario)
+        with st.container(border=True):
+            st.caption('ROLE-PLAY GUIDE · AVAILABLE THROUGHOUT THIS CHAT')
+            st.write('**' + scenario[1] + '**')
+            st.write(scenario[2])
+            instruction(scenario[3])
+            if st.button('Change scenario', key='change_roleplay_scenario'):
+                st.session_state.pop('roleplay_scenario', None)
+                st.rerun()
+    else:
+        st.write('**Role-play scenarios**')
+        instruction('Choose a story to keep its role-play instructions visible while you chat. Then describe the request in your own words. You can still invent your own fictional situation.')
+        for scenario_id, title, story, prompt in ROLEPLAY_SCENARIOS:
+            with st.expander(title, expanded=(not st.session_state.messages and scenario_id == 'treasurer')):
+                st.write(story)
+                instruction(prompt)
+                if st.button('Use this scenario', key='use_scenario_' + scenario_id):
+                    st.session_state.roleplay_scenario = scenario_id
+                    st.rerun()
     if not st.session_state.messages:
         st.subheader('What can we help you with?')
-        instruction('Read a scenario, then tell us what you need as if you were the applicant.')
+        instruction('Use the role-play guide above, then tell us what you need as if you were the applicant.')
     for role, messages in groupby(st.session_state.messages, key=lambda message: message['role']):
         with st.chat_message(role):
             st.markdown('<div class="hb-chat-sender">' + ('You' if role == 'user' else 'Harbour assistant') + '</div>', unsafe_allow_html=True)
@@ -294,18 +328,8 @@ with chat:
     if st.session_state.get('ai_notice'):
         st.info(st.session_state.ai_notice)
     if stage == 'request':
-        st.write('**Try a scenario**')
-        instruction('Choose a role below and explain what you need in your own words. You do not need to know any form names. All names and organisations are fictional.')
-        with st.expander('1 · New treasurer — keep the previous treasurer during handover', expanded=True):
-            st.write('You are Alex Morgan, newly appointed to the board of Nordic Business Council, a registered association, as its treasurer. You need access to all of the council’s bank accounts so you can carry out your new responsibilities. Erik Larsen, the previous treasurer, has stepped down from the board and no longer holds an official role. You would like him to keep his existing account access for a month while he trains you. You are unsure whether the bank will allow this.')
-            instruction('Explain the handover you want, ask what you need to do, and let the assistant ask any follow-up questions.')
-        with st.expander('2 · New company director — account access and a debit card'):
-            st.write('You are Priya Shah, a newly appointed director of Cedar Lane Trading, a private limited company. You will help manage business expenses. You need to be added as someone who can sign on the company’s bank account, and you also want a new business debit card in your name. The existing directors should keep their account access. You do not know whether the two requests need separate paperwork.')
-            instruction('Describe both things you want in everyday language. If you do not know an account detail or signing rule, say so.')
-        with st.expander('3 · Departing employee — debit card and Phone Banking'):
-            st.write('You are Daniel Lee, a director of Willow Office Supplies, a private limited company. An employee, Maya Chen, is leaving next week. She has a business debit card and uses Phone Banking, but she is not an account signatory. You want her card cancelled and her Phone Banking access removed while keeping everyone else’s access unchanged. You are unsure which details the bank will need.')
-            instruction('Explain which services Maya uses and what should stop. Let the assistant work out the forms.')
-        st.caption('Use one of these scenarios or invent your own fictional situation. There is no script to follow.')
+        if st.session_state.get('roleplay_scenario'):
+            instruction('You do not need to know form names. All names and organisations are fictional.')
     elif stage == 'ai_question':
         for index, option in enumerate(st.session_state.ai_options):
             if st.button(option, key=f'ai_option_{len(st.session_state.messages)}_{index}', width='stretch'):
