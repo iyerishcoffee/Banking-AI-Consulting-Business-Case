@@ -197,3 +197,7 @@ hr { border-color:var(--line) !important; }
 [data-testid="stFileUploader"] button:active { background:#e3ebff !important; border-color:#2457c5 !important; }
 [data-testid="stFileUploader"] button :is(p,span,svg) { color:inherit !important; }
 [data-testid="stFileUploader"] button:focus-visible { outline:3px solid #2457e6 !important; outline-offset:3px; }
+/* Select a role-play card before the tabs; keep all three choices in one row on desktop. */
+[data-testid="stHorizontalBlock"]:has([class*="st-key-scenario_select_"]) { align-items:stretch; }
+[data-testid="stHorizontalBlock"]:has([class*="st-key-scenario_select_"]) [data-testid="stVerticalBlockBorderWrapper"] { min-height:205px; }
+[class*="st-key-scenario_select_"] button { width:100%; min-height:42px; font-weight:650; }

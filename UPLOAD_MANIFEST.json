@@ -3,11 +3,11 @@
   "files": [
     {
       "file": "app.py",
-      "sha256": "932fdd34964737f673f5ca9b986a0583f0dc75b6a42df9657602a8dcab42e6bb"
+      "sha256": "2e2008f580726f674be1d045066b5c52998574cf6f28a8420096ab0bc18a4d0f"
     },
     {
       "file": "ui.css",
-      "sha256": "f8dc4b4fa59a716296fa943c96811ae9c6207bac4b1f808229b83c164e0ec2ad"
+      "sha256": "8928bb4dfd439a2a9ad9cfd58a82a42b082ae3b973feb572900d7c361ef14002"
     },
     {
       "file": "form_selection.py",
@@ -55,7 +55,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "6cf3a6b2794a26ca6e2446bfeaac9c0c4b048c08ce7ae4aedc888c28d0938b38"
+      "sha256": "7fb6912604f577f56d77842f769af903ccb6903c6935d3c26f57dc59f12496f2"
     },
     {
       "file": ".gitignore",

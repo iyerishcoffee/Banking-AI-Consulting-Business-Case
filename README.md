@@ -4,7 +4,7 @@ This is a separate copy of the local prototype. The original project and its run
 
 ## What changed
 
-The opening screen explains the problem this prototype addresses: business banking changes can require several forms, and applicants may not know which forms fit or notice inconsistencies before a branch visit. The assistant recommends likely forms from a plain-language request and checks completed PDFs for avoidable mistakes, leaving verification and judgment to bank staff. It does not auto-fill forms. Three optional role-play scenario guides remain visible above the chat, including after the conversation starts. Applicants still describe requests and answer follow-up questions in free text; the scenarios do not select a service or limit what they can ask.
+The opening screen explains the problem this prototype addresses: business banking changes can require several forms, and applicants may not know which forms fit or notice inconsistencies before a branch visit. The assistant recommends likely forms from a plain-language request and checks completed PDFs for avoidable mistakes, leaving verification and judgment to bank staff. It does not auto-fill forms. Three role-play scenario cards appear side by side above the tabs. Choosing a card keeps its story visible there as the tester uses the request chat below. Applicants still describe requests and answer follow-up questions in free text; scenarios do not select a service or limit what they can ask.
 
 Correction snapshots appear automatically beneath visible findings; there is no Show me toggle. Additional corrections remain expandable to keep the initial review short. Precise snapshots still require a verified field/text location.
 
