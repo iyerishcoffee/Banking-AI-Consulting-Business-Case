@@ -390,8 +390,8 @@ if selected_scenario:
         st.write(scenario['story'])
         instruction(scenario['prompt'])
 
-views = st.tabs(['01  Your request', '02  Your forms', '03  Check forms'] + (['Staff review'] if staff_preview else []))
-chat, downloads, uploads = views[:3]
+views = st.tabs(['01  Your request', '02  Your forms'] + (['Staff review'] if staff_preview else []))
+chat, downloads = views[:2]
 with chat:
     if not st.session_state.messages:
         st.subheader('Tell us what you need')
@@ -418,8 +418,6 @@ with chat:
             if selection.get('unsupported'):
                 st.write('These cover the changes you selected. The other part of your original request still needs help from a Customer Service Officer.')
             st.write("Once they're filled, upload them here. If you're unsure about an entry, the Customer Service Officer can help.")
-        with st.expander('Upload completed forms', expanded=True):
-            render_uploads('chat_uploads')
     st.write('**Your turn — describe what you need**' if not st.session_state.messages else '**Continue in the chat**')
     if prompt := st.chat_input('Describe your banking request…'):
         submit_request(prompt)
@@ -429,6 +427,10 @@ with chat:
             st.session_state.pop(key, None)
         st.rerun()
     st.caption('Nothing is sent to a bank. Refreshing the browser may start a new session.')
+    st.divider()
+    st.subheader('Upload and check your forms')
+    instruction('When you have completed the recommended forms, upload them here. You can check more than one together.')
+    render_uploads('chat_uploads')
 
 with downloads:
     st.subheader('Forms for your request')
@@ -437,20 +439,15 @@ with downloads:
         render_downloads(ids, 'selected_')
         for note in notes:
             st.write(note)
-        st.write('Ready? Open Upload forms, or use the upload box in your chat.')
+        st.write('When the forms are ready, upload and check them below the chat.')
     else:
         st.write('Tell us about your request first. Your selected forms will appear here.')
     with st.expander('Browse all blank forms'):
         st.caption('Full catalogue — these are not all required for your request.')
         render_downloads(list(available), 'catalogue_')
 
-with uploads:
-    st.subheader('Upload your completed forms')
-    render_uploads('standalone_uploads')
-
-
 if staff_preview:
-    with views[3]:
+    with views[2]:
         st.subheader('Prepared review summary')
         st.caption('Demo preview — no Customer Service Officer has received this and no request has been approved.')
         current_context = json.dumps({'selection': st.session_state.selection, 'stage': st.session_state.stage, 'messages': st.session_state.messages}, sort_keys=True)
@@ -458,7 +455,7 @@ if staff_preview:
         if not current:
             st.write('Upload completed PDFs and choose Check my forms to prepare a summary. Changed requests need a new review.')
         for key, report in current:
-            st.write('**' + ('Chat upload' if key == 'chat_uploads' else 'Upload forms tab') + '**')
+            st.write('**Chat upload**')
             st.info('Ready for staff review. Check the items below before approving the request.')
             ai = report.get('ai_review', {})
             if ai.get('status') == 'completed':
