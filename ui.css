@@ -133,8 +133,8 @@ hr { border-color:var(--line) !important; }
   [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { width:88%; }
 }
 /* Compact evidence previews; retain natural proportions on narrow screens. */
-[data-testid="stImage"] { max-width:320px; }
-[data-testid="stImage"] img { max-width:100%; height:auto; object-fit:contain; }
+[data-testid="stImage"] { max-width:384px; }
+[data-testid="stImage"] img { max-width:100%; height:auto; object-fit:contain; border:2px dashed #7185ad; border-radius:8px; padding:4px; background:#fff; box-sizing:border-box; }
 
 /* Actionable guidance uses the accent; metadata remains secondary. */
 [data-testid="stMarkdownContainer"] .hb-instruction {

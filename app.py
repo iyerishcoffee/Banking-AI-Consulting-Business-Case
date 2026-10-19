@@ -171,6 +171,8 @@ def render_downloads(ids, prefix):
 def render_correction(item, files, widget_key):
     # One instruction, one compact location line. Detailed rules stay with staff.
     st.write('**' + item['title'] + '.**')
+    if item.get('details'):
+        st.write(item['details'])
     locations = item.get('locations', [])
     if locations:
         st.caption(compact_locations(locations))
@@ -183,7 +185,7 @@ def render_correction(item, files, widget_key):
                                    if name == location['document'] and hashlib.sha256(data).hexdigest() == location['sha256']), None)
                     picture = snapshot(source, location) if source is not None else None
                     if picture:
-                        st.image(picture, width=320)
+                        st.image(picture, width=384)
                     else:
                         instruction('Open this page to check the entry; a precise snapshot is unavailable.')
 
@@ -266,12 +268,29 @@ def render_uploads(key):
                 report = results[key]['report']
                 ai = report.get('ai_review', {})
                 if ai.get('status') == 'completed':
-                    st.caption('AI review completed · Corrections below combine AI findings and local checks. The snapshots below highlight the relevant parts of your PDFs.')
+                    st.caption('Your forms have been checked. The page snapshots point to each item.')
+                    with st.chat_message('assistant'):
+                        st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
+                        st.write(ai.get('summary') or 'I’ve checked the forms. Please review the corrections and snapshots below, then ask me if anything is unclear.')
                 elif ai.get('status') == 'unavailable':
-                    st.info('Local checks only. ' + ai['message'])
+                    st.info('The AI check could not finish. The quick checks are shown below. ' + ai['message'])
+                    with st.chat_message('assistant'):
+                        st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
+                        corrections = [f for f in report['findings'] if f['owner'] == 'applicant']
+                        if corrections:
+                            st.write(f'I found {len(corrections)} item(s) to check or fix. Start with the notes and page snapshots below. When you have made changes, upload the updated forms and check them again.')
+                        else:
+                            st.write('I did not find a clear correction in the checks I could complete. A Customer Service Officer still needs to review the forms.')
                 else:
-                    st.caption('Local checks only · Turn on Include AI review for additional checks.')
+                    st.caption('Quick checks only · Turn on AI review for a more detailed check.')
                 corrections = [f for f in report['findings'] if f['owner'] == 'applicant']
+                if ai.get('status') not in {'completed', 'unavailable'}:
+                    with st.chat_message('assistant'):
+                        st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
+                        if corrections:
+                            st.write(f'I found {len(corrections)} item(s) to check or fix. Start with the notes and page snapshots below. When you have made changes, upload the updated forms and check them again.')
+                        else:
+                            st.write('I did not find a clear correction in the checks I could complete. A Customer Service Officer still needs to review the forms.')
                 if corrections:
                     st.write('**Please check these items:**')
                     for index, item in enumerate(corrections[:3]):
@@ -281,7 +300,7 @@ def render_uploads(key):
                             for index, item in enumerate(corrections[3:], 3):
                                 render_correction(item, accepted, key + fingerprint + str(index))
                 else:
-                    st.write('No simple corrections were identified by the checks that ran. This is a partial review, not confirmation that the forms are complete.')
+                    st.write('I did not find a clear change to make. This does not confirm that the forms are complete; a Customer Service Officer still needs to review them.')
                 st.info('A Customer Service Officer still needs to check uncertain details. This demo does not send your request to staff or to a bank.')
                 st.write('Bring the required identity and address evidence for in-person verification if adding a signatory. Do not upload it here.')
                 instruction('Replace the PDFs above to check corrected copies.')

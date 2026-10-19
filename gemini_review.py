@@ -15,7 +15,7 @@ from document_review import inspect_pdf
 from gemini_chat import MODEL, ENDPOINT, ChatUnavailable, provider_error
 from review_findings import consolidate
 
-AI_REVIEW_VERSION = '1.2'
+AI_REVIEW_VERSION = '1.3'
 POLICY = Path(__file__).resolve().parent / 'Account Change Submission Review Policy.docx'
 
 
@@ -60,9 +60,10 @@ FINDING = {'type': 'object', 'properties': {
     'required': ['title', 'details', 'rules', 'owner', 'confidence', 'locations'],
     'additionalProperties': False}
 SCHEMA = {'type': 'object', 'properties': {
+    'summary': string(600),
     'findings': {'type': 'array', 'items': FINDING, 'maxItems': 30},
     'limitations': {'type': 'array', 'items': string(500), 'maxItems': 15}},
-    'required': ['findings', 'limitations'], 'additionalProperties': False}
+    'required': ['summary', 'findings', 'limitations'], 'additionalProperties': False}
 
 
 def provider_schema(value):
@@ -143,7 +144,13 @@ Do not promote a suspected discrepancy merely because a location can be found.
 Refer to F03 as Minutes of Meeting, not a resolution form. Distinguish a missing @ from
 a missing domain using the actual email value; do not rename an existing local error.
 Applicant title: one short everyday-language instruction without rule jargon, ending punctuation
-optional. Details: explain evidence for staff, including actual conflicting values and request.
+optional. Never show form ID codes (such as F05M) in an applicant-facing title. Details: explain
+the evidence in short, plain language. The summary is shown as the assistant's first reply after
+the review: use 1-3 short sentences in everyday English, explain the main thing the applicant
+should change and what to do next, and do not use form IDs, rule numbers or technical terms.
+Base the summary only on findings and evidence in this review; do not add new issues or promises.
+If there are no clear applicant corrections, say so while making clear this is not approval or
+confirmation that the forms are complete. Keep uncertain items with staff.
 Only CLEAR, directly supported corrections go to applicant. Anything uncertain, signature-related,
 authenticity/eligibility-dependent or needing bank records goes to agent. For uncertain items,
 title starts 'Check' or 'Confirm', rather than presenting a suspected error as established.
@@ -243,6 +250,7 @@ def augment_review(api_key, files, local_report, selection=None, transport=None)
     report = copy.deepcopy(local_report)
     report['findings'] = consolidate(report['findings'], additions, documents)
     report['ai_review'] = {'status': 'completed', 'model': MODEL, 'version': AI_REVIEW_VERSION,
+                           'summary': result['summary'].strip(),
                            'policy_sha256': revision, 'limitations': result['limitations']}
     report['policy_basis'] = 'Local rule subset plus Gemini review using the current Word handbook (hash recorded). No test answer key or bank records used.'
     report['coverage'] = ('Local checks plus AI interpretation of submitted PDFs and the Word handbook. '
