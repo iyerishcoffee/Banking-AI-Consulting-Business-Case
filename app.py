@@ -9,7 +9,7 @@ import re
 import zipfile
 
 import streamlit as st
-from form_selection import interpret, plan, PURPOSES, ORGANISATIONS, TITLES
+from form_selection import interpret, plan, TITLES
 from document_review import review, CHECKER_VERSION
 from review_snapshots import compact_locations, location_label, snapshot
 from gemini_chat import respond, ChatUnavailable, MODEL
@@ -20,19 +20,6 @@ from server_settings import api_key, require_tester_access, reserve_call
 
 ROOT = Path(__file__).resolve().parent
 CATALOGUE = ROOT / 'Source Catalogue'
-ROLEPLAY_SCENARIOS = [
-    ('treasurer', '1 · New treasurer — keep the previous treasurer during handover',
-     'You are Alex Morgan, newly appointed to the board of Nordic Business Council, a registered association, as its treasurer. You need access to all of the council’s bank accounts so you can carry out your new responsibilities. Erik Larsen, the previous treasurer, has stepped down from the board and no longer holds an official role. You would like him to keep his existing account access for a month while he trains you. You are unsure whether the bank will allow this.',
-     'Explain the handover you want, ask what you need to do, and let the assistant ask any follow-up questions.'),
-    ('director', '2 · New company director — account access and a debit card',
-     'You are Priya Shah, a newly appointed director of Cedar Lane Trading, a private limited company. You will help manage business expenses. You need to be added as someone who can sign on the company’s bank account, and you also want a new business debit card in your name. The existing directors should keep their account access. You do not know whether the two requests need separate paperwork.',
-     'Describe both things you want in everyday language. If you do not know an account detail or signing rule, say so.'),
-    ('employee', '3 · Departing employee — debit card and Phone Banking',
-     'You are Daniel Lee, a director of Willow Office Supplies, a private limited company. An employee, Maya Chen, is leaving next week. She has a business debit card and uses Phone Banking, but she is not an account signatory. You want her card cancelled and her Phone Banking access removed while keeping everyone else’s access unchanged. You are unsure which details the bank will need.',
-     'Explain which services Maya uses and what should stop. Let the assistant work out the forms.'),
-]
-
-
 def instruction(text):
     st.markdown('<p class="hb-instruction">' + escape(text) + '</p>', unsafe_allow_html=True)
 
@@ -62,6 +49,9 @@ st.caption('Testing edition · Fictional information only · Nothing is sent to 
 st.markdown('<div class="hb-hero"><div class="hb-eyebrow">LESS PAPERWORK. MORE CLARITY.</div>'
             '<h1>Your next step, made simple.</h1>'
             '<p>Find the right forms. Catch the small mistakes. Arrive ready for your bank visit.</p></div>', unsafe_allow_html=True)
+with st.container(border=True):
+    st.markdown('**The problem this demo tackles**')
+    st.write('Business banking changes can involve several forms, and applicants may not know which ones fit their situation or notice inconsistencies before visiting a branch. Describe what you need in your own words; the assistant recommends the likely forms and checks completed PDFs for avoidable mistakes. It helps reduce paperwork back-and-forth so a Customer Service Officer can focus on verification and judgment. This prototype recommends and checks forms—it does not fill them in or approve requests.')
 
 
 
@@ -73,32 +63,57 @@ if staff_preview:
     st.caption('Tester preview: open the Staff review tab to see this session’s summary. This is not a staff login.')
 st.caption('AI chat sends your request and handbook guidance to Google. AI document review is a separate choice when uploading forms.')
 if not api_key():
-    st.info('AI is not configured yet. You can still use guided choices and local form checks.')
+    st.info('AI is not connected right now. You can still describe a straightforward request in the chat; complex or unclear requests will need a Customer Service Officer.')
 
 # Migrate sessions from the earlier placeholder screen without losing the request.
-if 'selector_version' not in st.session_state:
-    old = st.session_state.get('messages', [])
-    requests = [m['content'] for m in old if m['role'] == 'user']
-    st.session_state.selector_version = 1
-    st.session_state.messages = []
-    st.session_state.selection = None
-    st.session_state.stage = 'request'
-    if requests:
-        text = requests[-1]
-        selection = interpret(text)
-        st.session_state.selection = selection
-        st.session_state.messages = [{'role': 'user', 'content': text}]
-        st.session_state.stage = 'purpose' if selection['clarify'] else ('organisation' if 'signatory' in selection['needs'] and selection['organisation'] is None else 'ready')
+if st.session_state.get('selector_version', 0) < 2:
+    st.session_state.selector_version = 2
+    st.session_state.setdefault('messages', [])
+    st.session_state.setdefault('selection', None)
+    st.session_state.setdefault('stage', 'request')
+    st.session_state.pop('ai_options', None)
+    st.session_state.pop('roleplay_scenario', None)
+    if st.session_state.get('stage') in {'purpose', 'organisation'}:
+        st.session_state.stage = 'request'
 
 
 def submit_request(text):
     if api_key() and st.session_state.get('gemini_enabled'):
         submit_ai_request(text)
         return
-    selection = interpret(text)
-    st.session_state.selection = selection
     st.session_state.messages.append({'role': 'user', 'content': text})
-    st.session_state.stage = 'purpose' if selection['clarify'] else ('organisation' if 'signatory' in selection['needs'] and selection['organisation'] is None else 'ready')
+    previous = st.session_state.get('selection') or {}
+    parsed = interpret(text)
+    request = '\n'.join(m['content'] for m in st.session_state.messages if m['role'] == 'user')
+    if st.session_state.stage == 'organisation' and previous.get('needs'):
+        if parsed.get('organisation'):
+            selection = dict(previous, organisation=parsed['organisation'], request=request)
+            st.session_state.selection = selection
+            st.session_state.stage = 'ready'
+            return
+        if text.lower().replace('’', "'").strip() in ["i don't know", 'not sure', 'unknown']:
+            st.session_state.selection = dict(previous, organisation='unknown', request=request)
+            st.session_state.stage = 'ready'
+            return
+    needs = list(dict.fromkeys(previous.get('needs', []) + parsed.get('needs', [])))
+    organisation = parsed.get('organisation') or previous.get('organisation')
+    selection = dict(parsed, needs=needs, organisation=organisation, request=request,
+                     unsupported=previous.get('unsupported', False) or parsed.get('unsupported', False))
+    st.session_state.selection = selection
+    if parsed.get('clarify') and previous.get('needs') and st.session_state.stage not in {'organisation'}:
+        st.session_state.stage = 'help'
+        st.session_state.messages.append({'role': 'assistant', 'content': 'I may not have understood how these changes fit together, so I don’t want to guess which forms you need. A Customer Service Officer should help with this request. You can keep describing the situation here if there is another detail I should consider.'})
+    elif not needs and parsed.get('clarify'):
+        st.session_state.stage = 'request'
+        st.session_state.messages.append({'role': 'assistant', 'content': 'I’m not sure which change you need yet. Could you describe what should change, who or what it affects, and anything else the bank should know? It’s fine to say if you’re unsure.'})
+    elif 'signatory' in needs and not organisation:
+        st.session_state.stage = 'organisation'
+        st.session_state.messages.append({'role': 'assistant', 'content': 'What kind of organisation is this for? You can describe it in your own words or say if you’re unsure.'})
+    elif selection.get('unsupported') and not needs:
+        st.session_state.stage = 'help'
+        st.session_state.messages.append({'role': 'assistant', 'content': 'This request is outside the services covered by this demo. A Customer Service Officer can help with it. If there is another business banking change you want to prepare, describe it here.'})
+    else:
+        st.session_state.stage = 'ready'
 
 
 def submit_ai_request(text):
@@ -114,10 +129,10 @@ def submit_ai_request(text):
         st.session_state.ai_notice = str(error)
         selection = dict(previous) if previous else interpret(text)
         selection['request'] = '\n'.join(m['content'] for m in st.session_state.messages if m['role'] == 'user')
-        selection['organisation'] = None
         selection.pop('summary', None)
         st.session_state.selection = selection
-        st.session_state.stage = 'purpose'
+        st.session_state.stage = 'request'
+        st.session_state.messages.append({'role': 'assistant', 'content': 'I couldn’t complete the AI check just now. Please keep describing your request in your own words; if the request is complex, a Customer Service Officer will need to help.'})
         return
     st.session_state.gemini_status = 'Connected — the last chat reply came from Gemini.'
     st.session_state.pop('ai_notice', None)
@@ -132,7 +147,6 @@ def submit_ai_request(text):
         st.session_state.messages.append({'role': 'assistant', 'content': state['explanation']})
     if state['clarify']:
         st.session_state.ai_question = state['question']
-        st.session_state.ai_options = list(dict.fromkeys(state['options'] + ["I don't know"]))
         st.session_state.messages.append({'role': 'assistant', 'content': state['question']})
         st.session_state.stage = 'ai_question'
     elif not state['needs']:
@@ -330,32 +344,9 @@ def render_uploads(key):
 views = st.tabs(['01  Your request', '02  Your forms', '03  Check forms'] + (['Staff review'] if staff_preview else []))
 chat, downloads, uploads = views[:3]
 with chat:
-    # Keep the selected role-play brief visible throughout the conversation so
-    # testers can refer back to their instructions while answering follow-ups.
-    active_scenario = st.session_state.get('roleplay_scenario')
-    if active_scenario:
-        scenario = next(item for item in ROLEPLAY_SCENARIOS if item[0] == active_scenario)
-        with st.container(border=True):
-            st.caption('ROLE-PLAY GUIDE · AVAILABLE THROUGHOUT THIS CHAT')
-            st.write('**' + scenario[1] + '**')
-            st.write(scenario[2])
-            instruction(scenario[3])
-            if st.button('Change scenario', key='change_roleplay_scenario'):
-                st.session_state.pop('roleplay_scenario', None)
-                st.rerun()
-    else:
-        st.write('**Role-play scenarios**')
-        instruction('Choose a story to keep its role-play instructions visible while you chat. Then describe the request in your own words. You can still invent your own fictional situation.')
-        for scenario_id, title, story, prompt in ROLEPLAY_SCENARIOS:
-            with st.expander(title, expanded=(not st.session_state.messages and scenario_id == 'treasurer')):
-                st.write(story)
-                instruction(prompt)
-                if st.button('Use this scenario', key='use_scenario_' + scenario_id):
-                    st.session_state.roleplay_scenario = scenario_id
-                    st.rerun()
     if not st.session_state.messages:
-        st.subheader('What can we help you with?')
-        instruction('Use the role-play guide above, then tell us what you need as if you were the applicant.')
+        st.subheader('Tell us what you need')
+        instruction('Describe the change in your own words—who it affects, what should change, and whether it applies to one or several accounts. You don’t need to know the form names. Use fictional details only.')
     for role, messages in groupby(st.session_state.messages, key=lambda message: message['role']):
         with st.chat_message(role):
             st.markdown('<div class="hb-chat-sender">' + ('You' if role == 'user' else 'Harbour assistant') + '</div>', unsafe_allow_html=True)
@@ -365,50 +356,8 @@ with chat:
     selection = st.session_state.selection
     if st.session_state.get('ai_notice'):
         st.info(st.session_state.ai_notice)
-    if stage == 'request':
-        if st.session_state.get('roleplay_scenario'):
-            instruction('You do not need to know form names. All names and organisations are fictional.')
-    elif stage == 'ai_question':
-        for index, option in enumerate(st.session_state.ai_options):
-            if st.button(option, key=f'ai_option_{len(st.session_state.messages)}_{index}', width='stretch'):
-                submit_request(option)
-                st.rerun()
-        if st.button('Use guided choices instead', key='ai_guided'):
-            st.session_state.stage = 'purpose'
-            st.rerun()
-    elif stage == 'purpose':
-        with st.chat_message('assistant'):
-            st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
-            if selection['unsupported']:
-                st.write('Part of your request is outside this demo. A Customer Service Officer would need to help with that part.')
-            st.write('Which changes should we prepare forms for? You can choose more than one.')
-            with st.form('purpose_form'):
-                needs = st.multiselect('Choose your changes', options=list(PURPOSES), format_func=PURPOSES.get)
-                if st.form_submit_button('Continue', type='primary'):
-                    if needs:
-                        selection['needs'] = needs
-                        st.session_state.messages.append({'role': 'assistant', 'content': 'Which changes should we prepare forms for?'})
-                        st.session_state.messages.append({'role': 'user', 'content': '; '.join(PURPOSES[n] for n in needs)})
-                        st.session_state.stage = 'organisation' if 'signatory' in needs and selection['organisation'] is None else 'ready'
-                        st.rerun()
-                    else:
-                        st.warning("Choose a change, or use ‘I don't know’ below.")
-            if st.button("I don't know / my request isn't listed", key='unknown_purpose'):
-                st.session_state.stage = 'help'
-                st.rerun()
-    elif stage == 'organisation':
-        with st.chat_message('assistant'):
-            st.markdown('<div class="hb-chat-sender">Harbour assistant</div>', unsafe_allow_html=True)
-            st.write('What type of organisation is this for?')
-            for value, label in ORGANISATIONS.items():
-                if st.button(label, key='org_' + value, width='stretch'):
-                    selection['organisation'] = value
-                    st.session_state.messages.append({'role': 'assistant', 'content': 'What type of organisation is this for?'})
-                    st.session_state.messages.append({'role': 'user', 'content': label})
-                    st.session_state.stage = 'ready'
-                    st.rerun()
-    elif stage == 'help':
-        st.info("A Customer Service Officer would need to help choose the forms for this request. This demo can't send the case to a Customer Service Officer yet. You can still upload any forms you already have in ‘Upload forms’.")
+    if stage == 'help':
+        instruction('A Customer Service Officer can help with this request. You can describe any other business banking change here in the chat.')
     elif stage == 'ready':
         ids, notes = selected_forms()
         with st.chat_message('assistant'):
@@ -422,40 +371,9 @@ with chat:
             st.write("Once they're filled, upload them here. If you're unsure about an entry, the Customer Service Officer can help.")
         with st.expander('Upload completed forms', expanded=True):
             render_uploads('chat_uploads')
-        if st.button('Change my selections', key='edit_selection'):
-            st.session_state.stage = 'purpose'
-            selection['organisation'] = None
-            st.rerun()
-    # Buttons handle incremental answers; typed follow-ups are conservatively clarified.
-    st.write('**Your turn — type your request below**' if stage == 'request' else '**Continue your request**')
-    if stage == 'request':
-        instruction('Tell us who you are, what has changed and what you would like the bank to do. Write naturally, then press Enter or the send arrow.')
+    st.write('**Your turn — describe what you need**' if not st.session_state.messages else '**Continue in the chat**')
     if prompt := st.chat_input('Describe your banking request…'):
-        if api_key() and st.session_state.get('gemini_enabled'):
-            submit_ai_request(prompt)
-        elif stage == 'organisation':
-            answer = interpret(prompt)
-            if answer['organisation']:
-                selection['organisation'] = answer['organisation']
-                st.session_state.messages.append({'role': 'user', 'content': prompt})
-                # New service wording must not be silently ignored.
-                if answer['needs']:
-                    selection['needs'] = list(dict.fromkeys(selection['needs'] + answer['needs']))
-                st.session_state.stage = 'ready'
-            elif prompt.lower().replace('’', "'").strip() in ["i don't know", 'not sure', 'unknown']:
-                selection['organisation'] = 'unknown'
-                st.session_state.messages.append({'role': 'user', 'content': prompt})
-                st.session_state.stage = 'ready'
-            else:
-                st.session_state.messages.append({'role': 'user', 'content': prompt})
-        elif stage in ['ready', 'help', 'purpose']:
-            # Never silently interpret 'also' / corrections as replacing earlier intent.
-            st.session_state.messages.append({'role': 'user', 'content': prompt})
-            selection['request'] += '\n' + prompt
-            selection['organisation'] = interpret(prompt)['organisation']
-            st.session_state.stage = 'purpose'
-        else:
-            submit_request(prompt)
+        submit_request(prompt)
         st.rerun()
     if st.session_state.messages and st.button('Start a new request', key='reset'):
         for key in ['selector_version', 'selection', 'stage', 'messages', 'chat_uploads', 'standalone_uploads', 'review_results', 'ai_notice', 'ai_question', 'ai_options']:

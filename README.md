@@ -4,7 +4,9 @@ This is a separate copy of the local prototype. The original project and its run
 
 ## What changed
 
-Correction snapshots now appear automatically beneath visible findings; there is no Show me toggle. Additional corrections remain expandable to keep the initial review short. Precise snapshots still require a verified field/text location. The request screen includes three fictional role-play scenarios: treasurer handover, a new director needing signatory access and a card, and a departing employee with card and Phone Banking access. Testers can select a scenario to keep its full role-play guide visible above the conversation throughout follow-up questions. These are guidance for testers, not automatically submitted requests or expected answers.
+The opening screen explains the problem this prototype addresses: business banking changes can require several forms, and applicants may not know which forms fit or notice inconsistencies before a branch visit. The assistant recommends likely forms from a plain-language request and checks completed PDFs for avoidable mistakes, leaving verification and judgment to bank staff. It does not auto-fill forms. Applicants use free-text chat only; there are no preset scenarios or guided-choice menus. Follow-up questions are open-ended and can be answered in the applicant’s own words.
+
+Correction snapshots appear automatically beneath visible findings; there is no Show me toggle. Additional corrections remain expandable to keep the initial review short. Precise snapshots still require a verified field/text location.
 
 After an AI-enabled form check, Harbour assistant gives a short plain-language overview automatically, then explains each correction beside its page snapshot. The overview and correction wording are generated from the review findings; they can be mistaken and do not replace staff review.
 
@@ -48,8 +50,8 @@ Everyone uses the owner's Gemini quota. The app does not enable billing or know 
 
 1. Confirm the access-code gate appears and rejects an incorrect code.
 2. Enter the tester code. Confirm there is no API-key box or AI-chat switch. Show staff view should reveal a fourth tab for the current session; Hide staff view should remove it.
-3. Select a role-play scenario. Confirm its instructions remain visible after sending a message, then describe the request in your own words. For an association signatory change, confirm maintenance and minutes are recommended.
-4. Upload fictional completed forms and enable AI review explicitly. Confirm corrections and snapshots appear.
+3. Describe a business banking request in plain language. Check that unclear information triggers an open-ended chat question, not preset answer buttons, and confirm likely forms are recommended. For an association signatory change, confirm maintenance and minutes are recommended.
+4. Upload fictional completed forms and enable AI review explicitly. Confirm corrections and snapshots appear with plain-language explanations.
 5. Open a second browser session and confirm it starts without the first visitor's request or uploads.
 
 Use fictional information only. Uploaded forms and conversation stay in Streamlit session memory on the host; AI-enabled actions send the described content to Google. Nothing is submitted to a bank. Review can miss errors or produce mistaken findings; Customer Service Officers retain verification and approval responsibility.

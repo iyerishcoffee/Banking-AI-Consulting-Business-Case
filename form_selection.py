@@ -1,7 +1,7 @@
 """Small, explicit routing layer for the local demo; not an AI interpreter.
 
 Authority routing follows handbook v0.9 R02/R24. Broader language, negation
-and organisation types outside this catalogue require guided clarification.
+and organisation types outside this catalogue require an open-ended chat clarification.
 """
 import re
 

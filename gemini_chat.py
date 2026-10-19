@@ -37,14 +37,14 @@ maintenance), phone (Phone Banking), card_new (application), card_existing (main
 replacement/PIN). Velocity, credit cards, loans and opening accounts are unsupported.
 An LLP is other, not a private/public company. A council name alone does not prove registered association.
 organisation unasked means not supplied; unknown means applicant said they do not know.
-Ask ONE short high-level question when needed to choose forms OR resolve a material rule conflict; offer 2-3 easy choices.
+Ask ONE short, open-ended question in natural language when needed to choose forms OR resolve a material rule conflict. Do not give multiple-choice options or preset answers. An applicant may answer in their own words or say they do not know.
 Do not re-ask answered questions. 'I don't know' is acceptable; defer detailed eligibility,
 existing mandates, identities, signatures and bank records to staff. Do not ask for IDs or supporting uploads.
 If the organisation is an association and signatories are changing, the app requires maintenance
 and minutes regardless of uncertainty about current signing arrangements. Do not defer minutes.
 Do not ask which forms applicants want; infer supported needs from their request.
 If needs are clear, organisation is known or explicitly unknown, and no unresolved material rule conflict remains, clarify=false, question='', options=[].
-If an essential purpose is unclear, clarify=true with a short question and choices.
+If an essential purpose is unclear, clarify=true with a short, open-ended question and options=[].
 For explicit unknown purpose, no supported needs and clarify=false to allow agent help.
 Explain applicable known policy conflicts now, rather than silently deferring them to staff.
 Return explanation='' when there is no conflict. Otherwise give 1-2 brief, everyday-language
@@ -55,12 +55,14 @@ former treasurer to retain account/signatory access and says they hold no curren
 role, explain that training alone does not permit that access under this council rule.
 If their current designation is unknown, explain conditionally and ask whether they still
 hold an official role; do not infer no designation solely from 'former treasurer'.
-If they explicitly have no role and no future arrangement is settled, ask whether they
-will be appointed to another official role; options Yes, No, I'm not sure.
+If they explicitly have no role and no future arrangement is settled, ask in an open-ended
+way whether they expect to be appointed to another official role. Do not offer answer buttons;
+they can explain or say they are unsure.
 A planned appointment does not grant access now, and a role alone does not guarantee
 approval. Staff must verify appointment and authority. If already answered, do not ask again.
-If No, explain that removal must be included and ask whether to prepare adding the new
-person and removing the former treasurer, unless already confirmed. If unsure or insisting
+If they say they will not have a role, explain that removal must be included and ask in plain
+language whether to prepare adding the new person and removing the former treasurer, unless already
+confirmed. If unsure or insisting
 on retention, explain that staff must resolve eligibility; allow forms to be prepared
 without promising retained access or silently changing the request. Do not loop questions.
 This rule is scoped to council account/signatory access: never automatically extend it to
@@ -89,14 +91,14 @@ def provider_error(response):
     if 'API_KEY_SERVICE_BLOCKED' in reasons or 'SERVICE_DISABLED' in reasons:
         return 'This key or project cannot access the Gemini API. Check its API access in Google AI Studio. (HTTP ' + str(code) + ')'
     if code == 429:
-        return 'Gemini’s usage limit was reached. Try later or use the guided choices; no paid upgrade is needed. (HTTP 429)'
+        return 'Gemini’s usage limit was reached. Try again later. You can keep describing your request in the chat; no paid upgrade is needed. (HTTP 429)'
     if code in {401, 403}:
         return 'Google denied access for this key or project. Check the key and its permissions in AI Studio. (HTTP ' + str(code) + ')'
     if code == 404:
         return 'The configured Gemini model is unavailable through this API for your project. The app configuration needs checking. (HTTP 404)'
     if code == 400:
         return 'Google rejected the request settings. This may be an app configuration or key issue; no payment is required to investigate it. (HTTP 400)'
-    return 'Google could not complete the request. Try later or use the guided choices. (HTTP ' + str(code) + ')'
+    return 'Google could not complete the request. Try later or continue describing your request in the chat. (HTTP ' + str(code) + ')'
 
 
 def handbook_excerpt(path):
@@ -123,18 +125,18 @@ def handbook_excerpt(path):
 def respond(api_key, messages, selection=None, transport=None):
     key = api_key.strip()
     if not key or len(key) > 512 or any(c.isspace() for c in key):
-        raise ChatUnavailable('Check the key in AI setup, or continue with the guided choices.')
+        raise ChatUnavailable('Check the key in AI setup, or continue describing your request in the chat.')
     # Only explicit chat text and intake selections cross the API boundary.
     conversation = [{'role': m['role'], 'text': m['content']} for m in messages
                     if m.get('role') in {'user', 'assistant'}]
     context = {k: selection.get(k) for k in ['needs', 'organisation', 'request'] if selection and k in selection}
     content = json.dumps({'conversation': conversation, 'previous_intake': context}, ensure_ascii=False)
     if len(content) > 40000:
-        raise ChatUnavailable('This conversation is too long for this demo. Start a new request or use the guided choices.')
+        raise ChatUnavailable('This conversation is too long for this demo. Start a new chat request.')
     try:
         guidance = handbook_excerpt(Path(__file__).resolve().parent / 'Account Change Submission Review Policy.docx')
     except (OSError, ValueError, KeyError, zipfile.BadZipFile, ET.ParseError):
-        raise ChatUnavailable('The handbook could not be read. Please use the guided choices for now.') from None
+        raise ChatUnavailable('The handbook could not be read, so the assistant cannot recommend forms right now. Please ask a Customer Service Officer for help.') from None
     payload = {
         'systemInstruction': {'parts': [{'text': SYSTEM + '\nHandbook routing guidance:\n' + guidance}]},
         'contents': [{'role': 'user', 'parts': [{'text': content}]}],
@@ -145,7 +147,7 @@ def respond(api_key, messages, selection=None, transport=None):
         response = (transport or requests.post)(ENDPOINT, headers={'x-goog-api-key': key, 'Content-Type': 'application/json'},
                                                 json=payload, timeout=(5, 30), allow_redirects=False)
     except requests.RequestException:
-        raise ChatUnavailable('Gemini could not be reached. You can continue with the guided choices.') from None
+        raise ChatUnavailable('Gemini could not be reached. Please try again later; a Customer Service Officer can help with unclear requests.') from None
     if response.status_code != 200:
         raise ChatUnavailable(provider_error(response))
     try:
@@ -162,5 +164,5 @@ def respond(api_key, messages, selection=None, transport=None):
         if key in text or 'http://' in text or 'https://' in text:
             raise ValueError('Unexpected output')
     except (KeyError, IndexError, TypeError, ValueError, jsonschema.ValidationError):
-        raise ChatUnavailable('Gemini’s reply could not be used. Please continue with the guided choices.') from None
+        raise ChatUnavailable('Gemini’s reply could not be used. Please try again in a new chat or ask a Customer Service Officer for help.') from None
     return state

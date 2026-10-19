@@ -3,7 +3,7 @@
   "files": [
     {
       "file": "app.py",
-      "sha256": "25500b04be519a19d8e68c3a225917d68eb7f964c82a6b0d7a0c08c1207f25eb"
+      "sha256": "aba167289edb8f4636e51141a83191efe2ced8d1535d0d4f850e54ab0bfb6ddd"
     },
     {
       "file": "ui.css",
@@ -11,7 +11,7 @@
     },
     {
       "file": "form_selection.py",
-      "sha256": "c30ca33071c97bb59b4969dc78ba48276a32cd20347d2ec69f2f685f621d2f91"
+      "sha256": "7e70abc5ea769a1c040f2c61a70f60fc8cc942842a275fbb22b08be84016ccc9"
     },
     {
       "file": "document_review.py",
@@ -23,7 +23,7 @@
     },
     {
       "file": "gemini_chat.py",
-      "sha256": "7a2fe3abe3e6a998ad51fb56d7aeaa5f284b61d18ff147fac54a93a34648aee4"
+      "sha256": "32a68713b7938c2e366611cde7c79ca39711fb92b1136798468457fc1ba87427"
     },
     {
       "file": "gemini_review.py",
@@ -55,7 +55,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "d91430349403c5e1beef57c02673b4b36a573a17221dfb0c9308adb5beaf9d31"
+      "sha256": "cfc6e3ae8fa01f646f17f6fe61cfcc69cd4b1c0f2cc004be28e9d1ed8fb4c4ee"
     },
     {
       "file": ".gitignore",
