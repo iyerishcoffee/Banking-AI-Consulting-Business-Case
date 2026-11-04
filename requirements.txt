@@ -1,12 +1,5 @@
-streamlit==1.65.0
+streamlit==1.66.0
 pypdf==6.21.1
 pymupdf==1.28.2
 requests==2.34.2
 jsonschema==4.26.0
-
-# Pin the tested hosting runtime for Community Cloud.
-starlette==1.8.0
-anyio==4.15.1
-websockets==17.2
-uvicorn==0.54.0
-h11==0.16.0
